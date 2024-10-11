@@ -13,6 +13,8 @@ RUN npm install --silent
 # Copy the rest of the app's source code
 COPY . .
 
+COPY run_lint.sh .
+
 # Build the React app for production
 RUN npm run build
 
