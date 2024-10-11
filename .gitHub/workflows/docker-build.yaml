@@ -26,8 +26,8 @@ jobs:
       - name: Build Docker image
         run: docker build -t mapviz:${{ github.sha }} .
       
-       # Run mypy
-      - name: Run mypy
+       # Run eslint
+      - name: Run ESLint
         run: |
           docker run --rm mapviz:${{ github.sha }} sh run_lint.sh
 
