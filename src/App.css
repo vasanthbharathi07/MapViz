@@ -24,6 +24,17 @@
   color: white;
 }
 
+.leaflet-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.custom-button {
+  top: 10px; /* Adjust the position as necessary */
+}
+
+
 .App-link {
   color: #61dafb;
 }
