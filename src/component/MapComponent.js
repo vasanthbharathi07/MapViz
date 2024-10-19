@@ -1,8 +1,10 @@
 import { React, useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import DropDownComponent from "./DropdownComponent";
+import ResuableMapTile from "./ReusableMapTile";
+import CountrySelectionComponent from "./CountrySelectionComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faWind, faThermometerHalf, faSun, faCloud } from "@fortawesome/free-solid-svg-icons";
+import { faWind, faThermometerHalf } from "@fortawesome/free-solid-svg-icons";
+import getIconsBasedOnWeather from "./IconFinder";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
@@ -26,7 +28,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
 });
 
-function MapComponent() {
+function MapComponent({mode}) {
   const [selectedGeoCoords, setSelectedGeoCoords] = useState([
     20.5937, 78.9629,
   ]);
@@ -35,6 +37,11 @@ function MapComponent() {
   const [windData, setWindData] = useState(null);
   const [temperatureData, setTemperatureData] = useState(null);
   const [weatherDescription, setWeatherDescription] = useState(null);
+  const [mapMode, setMapMode] = useState(null);
+
+  useEffect(() => {
+    setMapMode(mode);
+  },[mode])
 
   useEffect(() => {
     //Debug use
@@ -61,19 +68,18 @@ function MapComponent() {
 
   return (
     <>
-      <DropDownComponent
+     {mapMode && mapMode === 'Weather' && 
+      <CountrySelectionComponent
         onPlaceChange={onPlaceSelectionChange}
       />
+      }
       <MapContainer
         key={selectedGeoCoords.join(",")} // Force remount on coordinate change
         center={selectedGeoCoords} // Coordinates of India's center
         zoom={zoomLevel} // Set the zoom level
         style={{ height: "100vh", width: "100%" }} // Full-page map
       >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
+        <ResuableMapTile/>
         <Marker position={selectedGeoCoords}>
           <Popup>
           { windData && temperatureData && weatherDescription &&
@@ -86,12 +92,7 @@ function MapComponent() {
             </p>
             <p>
               {/* Display sun or cloud based on weather condition */}
-              {weatherDescription.toLowerCase().includes("sunny") ? (
-                <FontAwesomeIcon icon={faSun} /> 
-              ) : (
-                <FontAwesomeIcon icon={faCloud} />
-              )}{" "}
-              {weatherDescription}
+              {weatherDescription && getIconsBasedOnWeather(weatherDescription)}
             </p>
           </div>
           }
