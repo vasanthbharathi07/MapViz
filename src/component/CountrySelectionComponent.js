@@ -2,7 +2,7 @@ import { React, useRef } from "react";
 import countries_cities_state from "../resources/countries_states_cities.json";
 import { getWeatherForGivenCity } from "../services/ApiService";
 
-function DropDownComponent({ onPlaceChange }) {
+function CountrySelectionComponent({ onPlaceChange }) {
   const selectedCountryRef = useRef(null);
   const selectedStateRef = useRef(null);
   const selectedCityRef = useRef(null);
@@ -75,4 +75,4 @@ function DropDownComponent({ onPlaceChange }) {
   );
 }
 
-export default DropDownComponent;
+export default CountrySelectionComponent;
