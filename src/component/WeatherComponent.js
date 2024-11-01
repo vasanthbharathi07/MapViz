@@ -1,8 +1,10 @@
 import { React, useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import DropDownComponent from "./DropdownComponent";
+import ResuableMapTile from "./ReusableMapTile";
+import CountrySelectionComponent from "./CountrySelectionComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faWind, faThermometerHalf, faSun, faCloud } from "@fortawesome/free-solid-svg-icons";
+import { faWind, faThermometerHalf } from "@fortawesome/free-solid-svg-icons";
+import getIconsBasedOnWeather from "./IconFinder";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
@@ -26,7 +28,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
 });
 
-function MapComponent() {
+function WeatherComponent() {
   const [selectedGeoCoords, setSelectedGeoCoords] = useState([
     20.5937, 78.9629,
   ]);
@@ -61,7 +63,8 @@ function MapComponent() {
 
   return (
     <>
-      <DropDownComponent
+
+      <CountrySelectionComponent
         onPlaceChange={onPlaceSelectionChange}
       />
       <MapContainer
@@ -70,31 +73,23 @@ function MapComponent() {
         zoom={zoomLevel} // Set the zoom level
         style={{ height: "100vh", width: "100%" }} // Full-page map
       >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
+        <ResuableMapTile />
         <Marker position={selectedGeoCoords}>
           <Popup>
-          { windData && temperatureData && weatherDescription &&
-          <div>
-            <p>
-              <FontAwesomeIcon icon={faWind} /> {windData}
-            </p>
-            <p>
-              <FontAwesomeIcon icon={faThermometerHalf} /> {temperatureData}
-            </p>
-            <p>
-              {/* Display sun or cloud based on weather condition */}
-              {weatherDescription.toLowerCase().includes("sunny") ? (
-                <FontAwesomeIcon icon={faSun} /> 
-              ) : (
-                <FontAwesomeIcon icon={faCloud} />
-              )}{" "}
-              {weatherDescription}
-            </p>
-          </div>
-          }
+            {windData && temperatureData && weatherDescription &&
+              <div>
+                <p>
+                  <FontAwesomeIcon icon={faWind} /> {windData}
+                </p>
+                <p>
+                  <FontAwesomeIcon icon={faThermometerHalf} /> {temperatureData}
+                </p>
+                <p>
+                  {/* Display sun or cloud based on weather condition */}
+                  {weatherDescription && getIconsBasedOnWeather(weatherDescription)}
+                </p>
+              </div>
+            }
           </Popup>
         </Marker>
       </MapContainer>
@@ -102,4 +97,4 @@ function MapComponent() {
   );
 }
 
-export default MapComponent;
+export default WeatherComponent;
