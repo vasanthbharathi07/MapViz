@@ -13,33 +13,35 @@ import {
   geoJsonStyleOthers,
 } from "../utils/utilities";
 import SideBoardComponent from "./SideBoardComponent";
+import DropDownComponent from "./DropDownComponent";
+import { COUNTRY_NAME_US, COLOR_GREEN, YEARS_LIST, DEFAULT_YEAR_VALUE, OPACITY_VALUE, WEIGHT_VALUE,CSV_2020_DATA_FILE_NAME,COUNTRY_US_LAT,COUNTRY_US_LONG } from "../constants/AppConstants";
 
 import "leaflet/dist/leaflet.css";
 
 function ElectionsComponent() {
-  const selectedGeoCoords = [39.8283, -98.5795];
+  const selectedGeoCoords = [COUNTRY_US_LAT, COUNTRY_US_LONG];
   const zoomLevel = 5;
   //TODO:: Right now adding only US state geojson data , in future plans to add India and Canada
   const [geoJsonData, setGeoJsonData] = useState(null);
+  const [selectedYear, setSelectedYear] = useState(CSV_2020_DATA_FILE_NAME);
   const [electionResultsData, setElectionResultsData] = useState(null);
   const [currentSelectedState, SetCurrentSelectedState] = useState(null);
 
   const democratVotesRef = useRef(null);
   const republicanVotesRef = useRef(null);
   const otherVotesRef = useRef(null);
-
+  const defaultValueForDropDown = [DEFAULT_YEAR_VALUE];
 
   //TODO::Loads the JSON at very first time,later will add this during a state change
   useEffect(() => {
     const fetchData = async () => {
       try {
         const responseGeoJsonData = await fetchGeoJsonData(
-          "United States Of America"
+          COUNTRY_NAME_US
         );
         setGeoJsonData(responseGeoJsonData);
-
         const responseElectionResultsData = await fetchElectionResultsData(
-          "United States Of America"
+          COUNTRY_NAME_US, selectedYear
         );
         setElectionResultsData(responseElectionResultsData);
       } catch (error) {
@@ -47,7 +49,7 @@ function ElectionsComponent() {
       }
     };
     fetchData();
-  }, []);
+  }, [selectedYear]);
 
   useEffect(() => {
     if (geoJsonData) {
@@ -58,16 +60,20 @@ function ElectionsComponent() {
     }
   }, [geoJsonData, electionResultsData]);
 
+  function onYearChange(dataSource) {
+    setSelectedYear(dataSource);
+  }
+
   // Behaivour of the map color , opacity , background color and weight are set during the mouse hover
   // Once mouse enters a state geojson feature it will change color to orange
-  //Once mouse coes out of the state then all the styles gets reverted back to old color
+  //Once mouse goes out of the state then all the styles gets reverted back to old color
   const onEachStateMouseHover = (feature, layer) => {
     // Mouseover event: highlight the state
     layer.on("mouseover", function () {
       layer.setStyle({
-        fillColor: "Green", // Change the color on hover
-        fillOpacity: 0.7, // Adjust opacity
-        weight: 2,
+        fillColor: COLOR_GREEN, // Change the color on hover
+        fillOpacity: OPACITY_VALUE, // Adjust opacity
+        weight: WEIGHT_VALUE,
       });
     });
 
@@ -76,7 +82,7 @@ function ElectionsComponent() {
       layer.setStyle(getStyleForState(feature.properties.name));
     });
 
-    layer.on("click", function(){
+    layer.on("click", function () {
       getElectionDataForGivenState(feature.properties.name);
     });
   };
@@ -87,15 +93,12 @@ function ElectionsComponent() {
       (row) => row.state === stateName
     );
 
-
     if (filteredData && filteredData.length > 0) {
-      console.log('Entering filteredData',filteredData[0]);
       democratVotesRef.current = filteredData[0]?.democratVotes;
       republicanVotesRef.current = filteredData[0]?.republicanVotes;
       otherVotesRef.current = filteredData[0]?.otherVotes;
       SetCurrentSelectedState(stateName);
     }
-
   }
 
   function getStyleForState(stateName) {
@@ -125,6 +128,11 @@ function ElectionsComponent() {
 
   return (
     <>
+      <DropDownComponent
+        defaultValueList={defaultValueForDropDown}
+        listOfDropDownDataList={YEARS_LIST}
+        onSelectionChange={onYearChange}
+      />
       <MapContainer
         key={selectedGeoCoords.join(",")}
         center={selectedGeoCoords}
@@ -143,10 +151,18 @@ function ElectionsComponent() {
           />
         )}
       </MapContainer>
-      {currentSelectedState && democratVotesRef.current && republicanVotesRef.current && otherVotesRef.current &&
-        <SideBoardComponent stateName={currentSelectedState} democratVotes={democratVotesRef.current} republicanVotes={republicanVotesRef.current} otherVotes={otherVotesRef.current} />
-      }
-       <LegendComponent />
+      {currentSelectedState &&
+        democratVotesRef.current &&
+        republicanVotesRef.current &&
+        otherVotesRef.current && (
+          <SideBoardComponent
+            stateName={currentSelectedState}
+            democratVotes={democratVotesRef.current}
+            republicanVotes={republicanVotesRef.current}
+            otherVotes={otherVotesRef.current}
+          />
+        )}
+      <LegendComponent />
     </>
   );
 }
