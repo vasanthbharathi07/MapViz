@@ -1,6 +1,7 @@
 import axios from "axios";
 import { WEATHER_API_BASE_URL } from "../constants/url_constants";
 import { parseElectionData } from "../utils/utilities";
+import { COUNTRY_NAME_US } from "../constants/AppConstants";
 
 export function getWeatherForGivenCity(cityName) {
   let apiUrl = WEATHER_API_BASE_URL + "/" + cityName;
@@ -16,18 +17,18 @@ export function getWeatherForGivenCity(cityName) {
 }
 
 
-export async function fetchElectionResultsData(country) {
+export async function fetchElectionResultsData(country, dataSource) {
   try {
-    if (country === "United States Of America") {
-      const response = await fetch("/resources/US_elections_2020_csv.csv"); // Assuming it's in the public/resources folder
+    if (country === COUNTRY_NAME_US) {
+      const response = await fetch("/resources/" + dataSource); // Assuming it's in the public/resources folder
       if (!response.ok) {
-        throw new Error(`Failed to fetch GeoJSON: ${response.statusText}`);
+        throw new Error(`Failed to fetch election results data: ${response.statusText}`);
       }
+      console.log('Response = ',response);
       const data = await response.text();
       const row_data = data?.split('\n');
       const electionDataList = row_data.map(parseElectionData);
       return electionDataList;
-      //setElectionResultsData(electionDataList); // Set GeoJSON data in state
     }
   } catch (error) {
     console.error("Error fetching GeoJSON data:", error);
@@ -36,7 +37,7 @@ export async function fetchElectionResultsData(country) {
 
 export async function fetchGeoJsonData(country) {
   try {
-    if (country === "United States Of America") {
+    if (country === COUNTRY_NAME_US) {
       const response = await fetch("/resources/us-state-boundaries.geojson"); // Assuming it's in the public/resources folder
       if (!response.ok) {
         throw new Error(`Failed to fetch GeoJSON: ${response.statusText}`);
